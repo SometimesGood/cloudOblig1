@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <%- include ("../partials/header.ejs") %>
+</head>
+
+<body>
+
+  <div class=" text-center">
+    <h2>ABC BANK</h2>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+    <h3></h3>
+    <div>
+      <form action="#" method="#">
+        <input type="text" placeholder="Personal Number" name="personal_number">
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+    <br>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+    <h3>Insert customer</h3>
+    <div>
+      <form action="#" method="#">
+        <label for="fname">First name:</label><br>
+        <input type="text" placeholder="First name" id="fname" name="fname"><br>
+        <label for="lname">Last name:</label><br>
+        <input type="text" placeholder="Last name" id="lname" name="lname"><br><br>
+        <button type="submit">Save</button>
+      </form>
+    </div>
+    <br>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+    <div>
+      <h3>Update customer</h3>
+      <form action="#" method="#">
+        <label for="fname">Personal number:</label><br>
+        <input type="text" placeholder="Personal Number" name="personal_number"><br>
+        <label for="fname">First name:</label><br>
+        <input type="text" placeholder="First name" id="fname" name="fname"><br><br>
+        <button type="submit">Update</button>
+      </form>
+    </div>
+    <br>
+    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
+    <div>
+      <h3>Delete customer</h3>
+      <form action="#" method="#">
+        <label for="fname">Personal number:</label><br>
+        <input type="text" placeholder="Personal Number" name="personal_number"><br><br>
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+    <br>
+  </div>
+</body>
+<script>
+function sample_ajax() {
+  $.ajax({
+    url:"/find_user",
+    type: "post",    //request type,
+    dataType: 'json',
+    data: {},
+    success:function(result){
+      console.log(result.abc);
+    }
+  });
+
+}
+</script>
+</html>
