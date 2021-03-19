@@ -10,7 +10,7 @@ const { performance } = require("perf_hooks");
 
 const app = express();
 
-// database user {name: heavynedbor, password: leoknut}
+// database user login info {name: heavynedbor, password: leoknut}
 
 // Make sure you place body-parser before your CRUD handlers!
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -59,18 +59,18 @@ app
     })
   )
 
-  /* route for checking if personal number exists in the abc bank DB and retrieving account number
+  /* READ -  route for checking if personal number exists in the abc bank DB and retrieving account number
    corresponding to that personal number */
   .get("/customerExist", (req, res) => {
-    // time stamp here is T2
-
     let personalNumberToFind = req.query.personalNumber;
 
     Customer.find({ Personal_number: personalNumberToFind })
       .then((result) => {
         // TIMESTAMP 4 HERE
+        //  let timestampT4 = Date.now();
+        //console.log("timestamp4", timestampT4);
 
-        // show the account number that has the personalnumber entered
+        // if found any personalnumber in db, show the account number that has the personalnumber entered
         if (result.length > 0) {
           res.render("pages/index", {
             customerNumber: "Customer Number: " + result[0].Account_number,
@@ -78,7 +78,9 @@ app
             updatedUser: "",
             deletedUser: "",
           });
-        } else {
+        }
+        // if not found anything the send ejs message that nothing was found
+        else {
           res.render("pages/index", {
             customerNumber: "Personal number does not exist",
             personalNumberTaken: "",
@@ -92,8 +94,9 @@ app
       });
   })
 
-  /* Checking if personal number exist in db and either adding user if it does 
+  /* CREATE - Checking if personal number exist in db and either adding user if it does 
   not exist or return the account number if it does exist*/
+
   .post("/insertCustomer", (req, res) => {
     let personalNumberToFind = req.body.personalNumberInsert;
 
@@ -149,15 +152,18 @@ app
     });
   })
 
-  // update customer details to customer table
+  // UPDATE - update customer details to customer table
   .post("/updateCustomer", (req, res) => {
+    // new values
     let customerToUpdate = req.body.personalNumberUpdate;
     let customerNewName = req.body.fnameUpdate;
     let customerNewLastname = req.body.lnameUpdate;
     let customerNewCity = req.body.cityUpdate;
 
     Customer.findOneAndUpdate(
+      // filter
       { Personal_number: customerToUpdate },
+      // values to update with new values
       {
         First_name: customerNewName,
         Last_name: customerNewLastname,
@@ -168,7 +174,7 @@ app
         if (err) {
           console.log(err);
         } else {
-          // Personal number does not exist
+          //if  Personal number does not exist send ejs warning message
           if (!result) {
             console.log("DID NOT found personal number in update");
             res.render("pages/index", {
@@ -179,7 +185,7 @@ app
               deletedUser: "",
             });
           }
-          // If personal number matches then update the one it matches
+          // If personal number matches then update the one it matches and send confirmation ejs message
           else {
             console.log("found personal number in update");
             res.render("pages/index", {
@@ -194,7 +200,7 @@ app
       }
     );
   })
-  // delete customer details to customer table
+  // DELETE - delete customer details to customer table
   .post("/deleteCustomer", (req, res) => {
     let customerToDelete = req.body.personalNumberDelete;
 
@@ -204,7 +210,7 @@ app
         if (err) {
           console.log(err);
         } else {
-          // Personal number does not exist
+          // if Personal number does not exist send ejs warning message
           if (!result) {
             console.log(result);
             res.render("pages/index", {
@@ -214,7 +220,7 @@ app
               deletedUser: `No user with personal number: ${customerToDelete} does exist`,
             });
           }
-          // If personal number matches then delete the one it matches
+          // If personal number matches then delete the one it matches and send ejs confirmation message
           else {
             console.log(result);
             res.render("pages/index", {

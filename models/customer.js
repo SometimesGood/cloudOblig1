@@ -1,3 +1,4 @@
+const { Db } = require("mongodb");
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
@@ -14,8 +15,7 @@ const customerSchema = new Schema(
   { timestamps: true }
 );
 
-// Model - Surronds schema and provides us a
-//interface which we can use to communicate with database collection
+// LATENCY END-TO-END
 customerSchema.pre("find", function () {
   // console.log(this instanceof mongoose.Query); // true
   this.start = Date.now();
@@ -23,9 +23,6 @@ customerSchema.pre("find", function () {
 });
 
 customerSchema.post("find", function (result) {
-  // console.log(this instanceof mongoose.Query); // true
-  // prints returned documents
-  // console.log("find() returned " + JSON.stringify(result));
   // prints number of milliseconds the query took
   this.end = Date.now();
   console.log(`end time ${this.end}`);
@@ -33,7 +30,7 @@ customerSchema.post("find", function (result) {
   console.log("find() took " + (Date.now() - this.start) + " millis");
 });
 
+// Model - Surronds schema and provides us a interface which we can use to communicate with database collection
 const Customer = mongoose.model("Customer", customerSchema);
-//Customer.db.readyState;
 
 module.exports = Customer;
