@@ -1,74 +1,232 @@
-const express = require('express')
-const path = require('path')
-const PORT = process.env.PORT || 5000
-const bodyParser= require('body-parser')
-const app = express()
+const express = require("express");
+const path = require("path");
+const PORT = process.env.PORT || 5000;
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const Customer = require("./models/customer");
+
+const morgan = require("morgan");
+const { performance } = require("perf_hooks");
+
+const app = express();
+
+// database user {name: heavynedbor, password: leoknut}
 
 // Make sure you place body-parser before your CRUD handlers!
-app.use(bodyParser.urlencoded({ extended: true }))
-const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://<user_name>:<password>@cluster0.jh6kv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+app.use(bodyParser.urlencoded({ extended: true }));
 
-async function run() {
-  try {
-    await client.connect();
-    // To mentioned to document
-    const database = client.db('<db_name>');
-    const collection = database.collection('<cluster_name>');
+//const MongoClient = require("mongodb").MongoClient;
+const uriDB =
+  "mongodb+srv://heavynedbor:leoknut@assignment1.sw5vp.mongodb.net/ABC-bank?retryWrites=true&w=majority";
 
-    // To insert to data
-    const doc = { s_name: "Test 1", s_age: "33",s_city:"Oslo" };
-    const result = await collection.insertOne(doc);
-    console.log(result)
+mongoose
+  .connect(uriDB, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  })
+  .then((result) => {
+    console.log("connected to the database");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
 
-    // Query for retrive the data from cluster0
-    const query = { s_name:"Test 4"};
-    const movie = await collection.findOne(query);
-    console.log(movie)
+mongoose.set("debug", function (collection, method, query, doc) {
+  console.log(
+    `collection: ${collection}, method: ${method}, query ${JSON.stringify(
+      query
+    )}, doc, ${JSON.stringify(doc)}`
+  );
+});
 
-    // To update the data
-    // create a filter for a movie to update
-   const filter = { s_name: "Test 4" };
-    // this option instructs the method to create a document if no documents match the filter
-    const options = { upsert: true };
-    // create a document that sets the plot of the movie
-    const updateDoc = {
-      $set: {
-        s_name:
-          "Updated Test 4",
-      },
-    };
-    // const result = await collection.updateOne(filter, updateDoc, options); // uncomment this to check update
-    // To delete the entry
-  /*  uncomment this to check delete query
-    const delete_query = { s_name: "Updated Test 4" };
-    const result_dele = await collection.deleteOne(delete_query);
-    if (result_dele.deletedCount === 1) {
-      console.dir("Successfully deleted one document.");
-    } else {
-      console.log("No documents matched the query. Deleted 0 documents.");
-    }
-    */
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
-run().catch(console.dir);
-
+// routes
 
 app
-  .use(express.static(path.join(__dirname, 'public')))
-  .set('views', path.join(__dirname, 'views'))
-  .set('view engine', 'ejs')
-  .get('/', (req, res) => res.render('pages/index'))
-  // routes for check personal number is exists in the bank DB
-  .post('/check_customer_exists', (req, res) => { console.log(req.body)})
-  // Insert customer details to customer table, return the customer account number
-  .post('/insert_customer_details', (req, res) => { console.log(req.body)})
+  .use(express.static(path.join(__dirname, "public")))
+  .set("views", path.join(__dirname, "views"))
+  .set("view engine", "ejs");
+
+// render main page
+app
+  .get("/", (req, res) =>
+    res.render("pages/index", {
+      customerNumber: "Customer Number",
+      personalNumberTaken: "",
+      updatedUser: "",
+      deletedUser: "",
+    })
+  )
+
+  /* route for checking if personal number exists in the abc bank DB and retrieving account number
+   corresponding to that personal number */
+  .get("/customerExist", (req, res) => {
+    // time stamp here is T2
+
+    let personalNumberToFind = req.query.personalNumber;
+
+    Customer.find({ Personal_number: personalNumberToFind })
+      .then((result) => {
+        // TIMESTAMP 4 HERE
+
+        // show the account number that has the personalnumber entered
+        if (result.length > 0) {
+          res.render("pages/index", {
+            customerNumber: "Customer Number: " + result[0].Account_number,
+            personalNumberTaken: "",
+            updatedUser: "",
+            deletedUser: "",
+          });
+        } else {
+          res.render("pages/index", {
+            customerNumber: "Personal number does not exist",
+            personalNumberTaken: "",
+            updatedUser: "",
+            deletedUser: "",
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  })
+
+  /* Checking if personal number exist in db and either adding user if it does 
+  not exist or return the account number if it does exist*/
+  .post("/insertCustomer", (req, res) => {
+    let personalNumberToFind = req.body.personalNumberInsert;
+
+    Customer.find({ Personal_number: personalNumberToFind }, (err, result) => {
+      if (err) {
+        console.log(err);
+        res.redirect("/");
+      }
+
+      // if customer does exist then show them the account number
+      else {
+        if (result.length > 0) {
+          console.log("user does exist will not add anything");
+          res.render("pages/index", {
+            // add a warning with ejs saying that user exists already
+            customerNumber: "",
+            personalNumberTaken:
+              "User with that personal number already exist here is the customer Number: " +
+              result[0].Account_number,
+            updatedUser: "",
+            deletedUser: "",
+          });
+        }
+        // if customer does not exist then create one with entered input
+        else {
+          console.log("user does not exist");
+          //customer object
+          let customer = new Customer({
+            Personal_number: req.body.personalNumberInsert,
+            //account number is a random number
+            Account_number: Math.floor(Math.random() * 1000),
+            First_name: req.body.fnameInsert,
+            Last_name: req.body.lname,
+            Date_of_birth: req.body.dob,
+            City: req.body.city,
+          });
+          //saving customer object to db and redirecting to home
+          customer
+            .save()
+            .then((promiseResult) => {
+              res.render("pages/index", {
+                customerNumber: "",
+                personalNumberTaken: "Created user with those input details",
+                updatedUser: "",
+                deletedUser: "",
+              });
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }
+      }
+    });
+  })
+
   // update customer details to customer table
-  .post('/update_customer_details', (req, res) => { console.log(req.body)})
+  .post("/updateCustomer", (req, res) => {
+    let customerToUpdate = req.body.personalNumberUpdate;
+    let customerNewName = req.body.fnameUpdate;
+    let customerNewLastname = req.body.lnameUpdate;
+    let customerNewCity = req.body.cityUpdate;
+
+    Customer.findOneAndUpdate(
+      { Personal_number: customerToUpdate },
+      {
+        First_name: customerNewName,
+        Last_name: customerNewLastname,
+        City: customerNewCity,
+      },
+      null,
+      (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          // Personal number does not exist
+          if (!result) {
+            console.log("DID NOT found personal number in update");
+            res.render("pages/index", {
+              customerNumber: "",
+              personalNumberTaken: "",
+              updatedUser:
+                "Did not find any with personal number: " + customerToUpdate,
+              deletedUser: "",
+            });
+          }
+          // If personal number matches then update the one it matches
+          else {
+            console.log("found personal number in update");
+            res.render("pages/index", {
+              customerNumber: "",
+              personalNumberTaken: "",
+              updatedUser:
+                "Updated user with personal number: " + result.Personal_number,
+              deletedUser: "",
+            });
+          }
+        }
+      }
+    );
+  })
   // delete customer details to customer table
-  .post('/delete_customer_details', (req, res) => { console.log(req.body)})
-  .listen(PORT, () => console.log(`Listening on ${ PORT }`))
+  .post("/deleteCustomer", (req, res) => {
+    let customerToDelete = req.body.personalNumberDelete;
+
+    Customer.findOneAndDelete(
+      { Personal_number: customerToDelete },
+      (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          // Personal number does not exist
+          if (!result) {
+            console.log(result);
+            res.render("pages/index", {
+              customerNumber: "",
+              personalNumberTaken: "",
+              updatedUser: "",
+              deletedUser: `No user with personal number: ${customerToDelete} does exist`,
+            });
+          }
+          // If personal number matches then delete the one it matches
+          else {
+            console.log(result);
+            res.render("pages/index", {
+              customerNumber: "",
+              personalNumberTaken: "",
+              updatedUser: "",
+              deletedUser: `Deleted user with personal number: ${customerToDelete}`,
+            });
+          }
+        }
+      }
+    );
+  });
+
+app.listen(PORT, () => console.log(`Listening on ${PORT}`));

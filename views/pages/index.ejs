@@ -1,70 +1,187 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <%- include ("../partials/header.ejs") %>
-</head>
+  <head>
+    <%- include ("../partials/header.ejs") %>
+  </head>
 
-<body>
+  <body>
+    <div class="text-center">
+      <h2>ABC BANK</h2>
+      <hr
+        style="
+          height: 2px;
+          border-width: 0;
+          color: gray;
+          background-color: gray;
+        "
+      />
+      <div>
+        <form action="customerExist" method="GET">
+          <label for="personalNumber">personal Number:</label>
+          <input
+            type="text"
+            placeholder="Personal Number"
+            name="personalNumber"
+            required
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+      <br />
+      <!-- Result from checking personalNumber -->
+      <h3><%= customerNumber %></h3>
+      <hr
+        style="
+          height: 2px;
+          border-width: 0;
+          color: gray;
+          background-color: gray;
+        "
+      />
+      <h3>Insert customer</h3>
+      <div>
+        <form action="insertCustomer" method="POST">
+          <label for="personalNumberInsert">personal Number:</label><br />
+          <input
+            type="text"
+            placeholder="123456"
+            id="personalNumberInsert"
+            name="personalNumberInsert"
+            required
+          /><br />
+          <label for="fnameInsert">First name:</label><br />
+          <input
+            type="text"
+            placeholder="John"
+            id="fnameInsert"
+            name="fnameInsert"
+            required
+          /><br />
+          <label for="lname">Last name:</label><br />
+          <input
+            type="text"
+            placeholder="Doe"
+            id="lname"
+            name="lname"
+            required
+          /><br />
+          <label for="dob">Date of birth:</label><br />
+          <input
+            type="text"
+            placeholder="1998-05-09"
+            id="dob"
+            name="dob"
+            required
+          /><br />
+          <label for="city">City:</label><br />
+          <input
+            type="text"
+            placeholder="Sydney"
+            id="city"
+            name="city"
+            required
+          /><br />
 
-  <div class=" text-center">
-    <h2>ABC BANK</h2>
-    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-    <h3></h3>
-    <div>
-      <form action="#" method="#">
-        <input type="text" placeholder="Personal Number" name="personal_number">
-        <button type="submit">Submit</button>
-      </form>
+          <br />
+          <button type="submit">Register</button>
+        </form>
+      </div>
+      <!-- Warning message here with ejs -->
+      <h3><%= personalNumberTaken %></h3>
+      <br />
+      <hr
+        style="
+          height: 2px;
+          border-width: 0;
+          color: gray;
+          background-color: gray;
+        "
+      />
+      <div>
+        <h3>Update customer</h3>
+        <form action="updateCustomer" method="POST">
+          <label for="personalNumberUpdate">Personal number:</label><br />
+          <input
+            type="text"
+            placeholder="Personal Number"
+            name="personalNumberUpdate"
+            required
+          /><br />
+          <label for="fnameUpdate">First name:</label><br />
+          <input
+            type="text"
+            placeholder="First name"
+            id="fnameUpdate"
+            name="fnameUpdate"
+            required
+          /><br />
+          <label for="lnameUpdate">last name:</label><br />
+
+          <input
+            type="text"
+            placeholder="Last name"
+            id="lnameUpdate"
+            name="lnameUpdate"
+            required
+          />
+
+          <br />
+          <label for="cityUpdate">City:</label><br />
+
+          <input
+            type="text"
+            placeholder="First name"
+            id="cityUpdate"
+            name="cityUpdate"
+            required
+          />
+
+          <br />
+          <button type="submit">Update</button>
+        </form>
+      </div>
+
+      <!-- The user who got updated -->
+      <h3><%= updatedUser %></h3>
+      <br />
+      <hr
+        style="
+          height: 2px;
+          border-width: 0;
+          color: gray;
+          background-color: gray;
+        "
+      />
+      <div>
+        <h3>Delete customer</h3>
+        <form action="deleteCustomer" method="POST">
+          <label for="personalNumberDelete">Personal number:</label><br />
+          <input
+            type="text"
+            placeholder="Personal Number"
+            name="personalNumberDelete"
+            required
+          /><br /><br />
+          <button type="submit">Delete</button>
+        </form>
+      </div>
+
+      <br />
+      <!-- Deleted user  -->
+      <h3><%= deletedUser %></h3>
     </div>
-    <br>
-    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-    <h3>Insert customer</h3>
-    <div>
-      <form action="#" method="#">
-        <label for="fname">First name:</label><br>
-        <input type="text" placeholder="First name" id="fname" name="fname"><br>
-        <label for="lname">Last name:</label><br>
-        <input type="text" placeholder="Last name" id="lname" name="lname"><br><br>
-        <button type="submit">Save</button>
-      </form>
-    </div>
-    <br>
-    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-    <div>
-      <h3>Update customer</h3>
-      <form action="#" method="#">
-        <label for="fname">Personal number:</label><br>
-        <input type="text" placeholder="Personal Number" name="personal_number"><br>
-        <label for="fname">First name:</label><br>
-        <input type="text" placeholder="First name" id="fname" name="fname"><br><br>
-        <button type="submit">Update</button>
-      </form>
-    </div>
-    <br>
-    <hr style="height:2px;border-width:0;color:gray;background-color:gray">
-    <div>
-      <h3>Delete customer</h3>
-      <form action="#" method="#">
-        <label for="fname">Personal number:</label><br>
-        <input type="text" placeholder="Personal Number" name="personal_number"><br><br>
-        <button type="submit">Delete</button>
-      </form>
-    </div>
-    <br>
-  </div>
-</body>
-<script>
-function sample_ajax() {
-  $.ajax({
-    url:"/find_user",
-    type: "post",    //request type,
-    dataType: 'json',
-    data: {},
-    success:function(result){
-      console.log(result.abc);
+  </body>
+  <script>
+    function sample_ajax() {
+      $.ajax({
+        url: "/find_user",
+        type: "post", //request type,
+        dataType: "json",
+        data: {},
+        success: function (result) {
+          console.log(result.abc);
+        },
+      });
     }
-  });
-
-}
-</script>
+  </script>
 </html>
